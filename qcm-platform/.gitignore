@@ -1,0 +1,14 @@
+# Dépendances
+node_modules/
+
+# Fichiers secrets (ne jamais publier sur GitHub)
+.env
+.env.local
+
+# Fichiers générés
+dist/
+build/
+
+# Divers
+.DS_Store
+*.log

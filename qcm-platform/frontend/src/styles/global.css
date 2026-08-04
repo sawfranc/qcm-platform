@@ -1,0 +1,349 @@
+/* ============================================================
+   Plateforme QCM — système de design "cahier & tableau noir"
+   Papier chaleureux, vert tableau profond, touche d'or/ocre.
+   ============================================================ */
+
+:root {
+  /* Couleurs */
+  --paper: #fbf7ef;
+  --paper-alt: #f3ecdb;
+  --ink: #1e2a22;
+  --muted: #6f6754;
+  --board: #24402f;
+  --board-dark: #16281c;
+  --board-light: #33513e;
+  --gold: #b8842a;
+  --gold-light: #e3b95a;
+  --rule: #ded0ab;
+  --rule-light: #ece3c9;
+  --error: #a6423a;
+  --error-bg: #f8e9e4;
+  --success: #3d7a52;
+  --success-bg: #e6f1e8;
+  --white: #ffffff;
+
+  /* Typographie */
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Rythme */
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 2px rgba(30, 42, 34, 0.06), 0 6px 20px rgba(30, 42, 34, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  background-image:
+    linear-gradient(var(--rule-light) 1px, transparent 1px);
+  background-size: 100% 2.1rem;
+  background-position: 0 6.5rem;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15.5px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Typographie ---------- */
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  color: var(--board-dark);
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0 0 0.6em;
+}
+
+h1 { font-size: 1.9rem; letter-spacing: -0.01em; }
+h2 { font-size: 1.35rem; margin-top: 2rem; }
+h3 { font-size: 1.1rem; margin-top: 1.2rem; }
+
+p { margin: 0 0 1em; color: var(--ink); }
+
+a {
+  color: var(--board);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1.5px solid var(--gold-light);
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+a:hover { color: var(--gold); border-color: var(--gold); }
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible {
+  outline: 2.5px solid var(--gold);
+  outline-offset: 2px;
+}
+
+ul { padding-left: 1.3em; }
+li { margin-bottom: 0.35em; }
+
+/* ---------- Mise en page ---------- */
+
+main {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+@media (max-width: 640px) {
+  main { padding: 1.25rem 1rem 3rem; }
+  h1 { font-size: 1.5rem; }
+}
+
+/* ---------- Barre de navigation (élément signature : tableau noir) ---------- */
+
+.app-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.75rem;
+  background: var(--board-dark);
+  border-bottom: 3px solid var(--gold);
+  flex-wrap: wrap;
+}
+
+.app-nav__brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--paper);
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.app-nav__brand::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--gold-light);
+  display: inline-block;
+}
+.app-nav__brand:hover { color: var(--gold-light); }
+
+.app-nav__links {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: 0.92rem;
+}
+
+.app-nav__links a {
+  color: var(--paper);
+  opacity: 0.85;
+  border-bottom-color: transparent;
+}
+.app-nav__links a:hover { opacity: 1; color: var(--gold-light); }
+
+.app-nav__user {
+  color: var(--paper);
+  opacity: 0.75;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* ---------- Formulaires ---------- */
+
+form {
+  background: var(--white);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.75rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--board-dark);
+  margin-bottom: 1.1rem;
+}
+
+label > input,
+label > select,
+label > textarea {
+  margin-top: 0.4rem;
+}
+
+input, select, textarea {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1.5px solid var(--rule);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+  font-weight: 400;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+input:hover, select:hover, textarea:hover { border-color: var(--board-light); }
+input:focus, select:focus, textarea:focus {
+  border-color: var(--board);
+  background: var(--white);
+  outline: none;
+}
+input:disabled, select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+textarea { min-height: 5rem; resize: vertical; }
+
+input[type="checkbox"] {
+  width: auto;
+  accent-color: var(--board);
+  margin-right: 0.4rem;
+  vertical-align: middle;
+}
+
+/* Cas des labels "en ligne" pour les cases à cocher */
+label:has(> input[type="checkbox"]) {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+/* ---------- Boutons ---------- */
+
+button {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--white);
+  background: var(--board);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 1.3rem;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.05s ease;
+}
+button:hover { background: var(--board-light); }
+button:active { transform: translateY(1px); }
+button:disabled {
+  background: var(--rule);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+/* Boutons secondaires : détectés par contexte (à côté d'un bouton primaire, ex. Rejeter) */
+button[type="button"] {
+  background: var(--white);
+  color: var(--board-dark);
+  border: 1.5px solid var(--rule);
+}
+button[type="button"]:hover {
+  background: var(--paper-alt);
+  border-color: var(--board-light);
+}
+
+/* ---------- Tableaux ---------- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--white);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  background: var(--paper-alt);
+  padding: 0.7rem 1rem;
+  border-bottom: 1.5px solid var(--rule);
+}
+
+td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--rule-light);
+  font-size: 0.92rem;
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--paper-alt); }
+
+/* ---------- Cartes ---------- */
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.1rem;
+  box-shadow: var(--shadow);
+}
+
+.card h3 { margin-top: 0; }
+
+/* ---------- Badges de statut ---------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.badge--pending { background: #f3ecdb; color: var(--gold); border: 1px solid var(--gold-light); }
+.badge--success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success); }
+.badge--error   { background: var(--error-bg); color: var(--error); border: 1px solid var(--error); }
+.badge--neutral { background: var(--paper-alt); color: var(--muted); border: 1px solid var(--rule); }
+
+/* ---------- Alertes ---------- */
+
+.alert {
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 1.2rem;
+  border: 1.5px solid transparent;
+}
+.alert--error { background: var(--error-bg); color: var(--error); border-color: var(--error); }
+.alert--success { background: var(--success-bg); color: var(--success); border-color: var(--success); }
+
+/* ---------- Utilitaires ---------- */
+
+.muted { color: var(--muted); font-size: 0.88rem; }
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  display: block;
+  margin-bottom: 0.3rem;
+}

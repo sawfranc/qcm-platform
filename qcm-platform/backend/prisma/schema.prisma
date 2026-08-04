@@ -1,0 +1,294 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  directeur
+  enseignant
+  eleve
+}
+
+enum UserStatus {
+  actif
+  suspendu
+  en_attente
+}
+
+enum QuestionStatus {
+  en_attente
+  validee
+  rejetee
+  archivee
+}
+
+enum SessionStatus {
+  en_cours
+  terminee
+  abandonnee
+}
+
+enum SubscriptionPlan {
+  gratuit
+  pack_standard
+  illimite
+  pack_concours
+}
+
+enum PaymentStatus {
+  en_attente
+  reussi
+  echoue
+  rembourse
+}
+
+enum PayoutStatus {
+  en_attente
+  paye
+  litige
+}
+
+model User {
+  id           String     @id @default(uuid())
+  fullName     String     @map("full_name")
+  email        String?    @unique
+  phone        String?    @unique
+  passwordHash String     @map("password_hash")
+  role         Role
+  status       UserStatus @default(actif)
+  createdById  String?    @map("created_by")
+  createdBy    User?      @relation("CreatedUsers", fields: [createdById], references: [id])
+  createdUsers User[]     @relation("CreatedUsers")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  directedDomains    Domain[]             @relation("DirectorDomains")
+  teacherAssignments TeacherAssignment[]  @relation("TeacherAssignments")
+  assignedByMe       TeacherAssignment[]  @relation("AssignedBy")
+  questionsAuthored  Question[]           @relation("QuestionAuthor")
+  questionsReviewed  Question[]           @relation("QuestionReviewer")
+  quizSessions       QuizSession[]
+  subscriptions      Subscription[]
+  payments           Payment[]
+  payouts            TeacherPayout[]
+  auditLogs          AuditLog[]
+
+  @@map("users")
+}
+
+model Domain {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  directorId  String?  @map("director_id")
+  director    User?    @relation("DirectorDomains", fields: [directorId], references: [id])
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  themes       Theme[]
+  assignments  TeacherAssignment[]
+  questions    Question[]
+  quizSessions QuizSession[]
+
+  @@map("domains")
+}
+
+model Theme {
+  id        String   @id @default(uuid())
+  domainId  String   @map("domain_id")
+  domain    Domain   @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  assignments  TeacherAssignment[]
+  questions    Question[]
+  references   ReferenceDocument[]
+  quizSessions QuizSession[]
+
+  @@map("themes")
+}
+
+model Level {
+  id        String @id @default(uuid())
+  name      String
+  sortOrder Int    @default(0) @map("sort_order")
+
+  questions    Question[]
+  quizSessions QuizSession[]
+
+  @@map("levels")
+}
+
+model TeacherAssignment {
+  id           String   @id @default(uuid())
+  teacherId    String   @map("teacher_id")
+  teacher      User     @relation("TeacherAssignments", fields: [teacherId], references: [id])
+  domainId     String   @map("domain_id")
+  domain       Domain   @relation(fields: [domainId], references: [id])
+  themeId      String?  @map("theme_id")
+  theme        Theme?   @relation(fields: [themeId], references: [id])
+  assignedById String   @map("assigned_by")
+  assignedBy   User     @relation("AssignedBy", fields: [assignedById], references: [id])
+  assignedAt   DateTime @default(now()) @map("assigned_at")
+
+  @@map("teacher_assignments")
+}
+
+model Question {
+  id              String         @id @default(uuid())
+  domainId        String         @map("domain_id")
+  domain          Domain         @relation(fields: [domainId], references: [id])
+  themeId         String         @map("theme_id")
+  theme           Theme          @relation(fields: [themeId], references: [id])
+  levelId         String         @map("level_id")
+  level           Level          @relation(fields: [levelId], references: [id])
+  authorId        String         @map("author_id")
+  author          User           @relation("QuestionAuthor", fields: [authorId], references: [id])
+  statement       String
+  explanation     String?
+  difficulty      Int            @default(2)
+  status          QuestionStatus @default(en_attente)
+  reviewedById    String?        @map("reviewed_by")
+  reviewedBy      User?          @relation("QuestionReviewer", fields: [reviewedById], references: [id])
+  reviewedAt      DateTime?      @map("reviewed_at")
+  rejectionReason String?        @map("rejection_reason")
+  usageCount      Int            @default(0) @map("usage_count")
+  successRate     Float?         @map("success_rate")
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  options    QuestionOption[]
+  references ReferenceDocument[]
+  answers    SessionAnswer[]
+
+  @@map("questions")
+}
+
+model QuestionOption {
+  id         String   @id @default(uuid())
+  questionId String   @map("question_id")
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  label      String
+  isCorrect  Boolean  @default(false) @map("is_correct")
+  sortOrder  Int      @default(0) @map("sort_order")
+
+  answers SessionAnswer[]
+
+  @@map("question_options")
+}
+
+model ReferenceDocument {
+  id           String    @id @default(uuid())
+  questionId   String?   @map("question_id")
+  question     Question? @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  themeId      String?   @map("theme_id")
+  theme        Theme?    @relation(fields: [themeId], references: [id])
+  title        String
+  fileUrl      String?   @map("file_url")
+  externalUrl  String?   @map("external_url")
+  uploadedById String    @map("uploaded_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@map("reference_documents")
+}
+
+model QuizSession {
+  id            String        @id @default(uuid())
+  studentId     String        @map("student_id")
+  student       User          @relation(fields: [studentId], references: [id])
+  domainId      String        @map("domain_id")
+  domain        Domain        @relation(fields: [domainId], references: [id])
+  themeId       String?       @map("theme_id")
+  theme         Theme?        @relation(fields: [themeId], references: [id])
+  levelId       String?       @map("level_id")
+  level         Level?        @relation(fields: [levelId], references: [id])
+  questionCount Int           @map("question_count")
+  score         Float?
+  startedAt     DateTime      @default(now()) @map("started_at")
+  completedAt   DateTime?     @map("completed_at")
+  status        SessionStatus @default(en_cours)
+
+  answers SessionAnswer[]
+
+  @@map("quiz_sessions")
+}
+
+model SessionAnswer {
+  id               String          @id @default(uuid())
+  sessionId        String          @map("session_id")
+  session          QuizSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  questionId       String          @map("question_id")
+  question         Question        @relation(fields: [questionId], references: [id])
+  selectedOptionId String?         @map("selected_option_id")
+  selectedOption   QuestionOption? @relation(fields: [selectedOptionId], references: [id])
+  isCorrect        Boolean?        @map("is_correct")
+  answeredAt       DateTime        @default(now()) @map("answered_at")
+
+  @@map("session_answers")
+}
+
+model Subscription {
+  id             String           @id @default(uuid())
+  userId         String           @map("user_id")
+  user           User             @relation(fields: [userId], references: [id])
+  plan           SubscriptionPlan
+  questionsQuota Int?             @map("questions_quota")
+  questionsUsed  Int              @default(0) @map("questions_used")
+  startsAt       DateTime         @default(now()) @map("starts_at")
+  endsAt         DateTime?        @map("ends_at")
+  isActive       Boolean          @default(true) @map("is_active")
+
+  payments Payment[]
+
+  @@map("subscriptions")
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  userId         String        @map("user_id")
+  user           User          @relation(fields: [userId], references: [id])
+  amount         Float
+  currency       String        @default("XOF")
+  provider       String?
+  providerRef    String?       @map("provider_ref")
+  status         PaymentStatus @default(en_attente)
+  subscriptionId String?       @map("subscription_id")
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  @@map("payments")
+}
+
+model TeacherPayout {
+  id                 String       @id @default(uuid())
+  teacherId          String       @map("teacher_id")
+  teacher            User         @relation(fields: [teacherId], references: [id])
+  periodStart        DateTime     @map("period_start")
+  periodEnd          DateTime     @map("period_end")
+  validatedQuestions Int          @default(0) @map("validated_questions")
+  usageBonus         Float        @default(0) @map("usage_bonus")
+  baseAmount         Float        @map("base_amount")
+  totalAmount        Float        @map("total_amount")
+  status             PayoutStatus @default(en_attente)
+  paidAt             DateTime?    @map("paid_at")
+
+  @@map("teacher_payouts")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?  @map("user_id")
+  user       User?    @relation(fields: [userId], references: [id])
+  action     String
+  entityType String?  @map("entity_type")
+  entityId   String?  @map("entity_id")
+  ipAddress  String?  @map("ip_address")
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+}
