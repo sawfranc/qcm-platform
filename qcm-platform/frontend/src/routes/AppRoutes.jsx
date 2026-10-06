@@ -15,6 +15,7 @@ import ValidateQuestions from "../pages/directeur/ValidateQuestions";
 
 import TeacherDashboard from "../pages/enseignant/TeacherDashboard";
 import CreateQuestion from "../pages/enseignant/CreateQuestion";
+import ImportQuestions from "../pages/enseignant/ImportQuestions";
 
 import StudentDashboard from "../pages/eleve/StudentDashboard";
 import QuizSession from "../pages/eleve/QuizSession";
@@ -42,6 +43,8 @@ export default function AppRoutes() {
       {/* Enseignant */}
       <Route path="/enseignant" element={<ProtectedRoute roles={["enseignant"]}><TeacherDashboard /></ProtectedRoute>} />
       <Route path="/enseignant/nouvelle-question" element={<ProtectedRoute roles={["enseignant"]}><CreateQuestion /></ProtectedRoute>} />
+
+      <Route path="/enseignant/import" element={<ProtectedRoute roles={["enseignant"]}><ImportQuestions /></ProtectedRoute>} />
 
       {/* Élève / étudiant */}
       <Route path="/" element={<ProtectedRoute roles={["eleve"]}><StudentDashboard /></ProtectedRoute>} />

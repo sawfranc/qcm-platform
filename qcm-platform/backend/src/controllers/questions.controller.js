@@ -10,6 +10,21 @@ async function create(req, res, next) {
   }
 }
 
+async function importMany(req, res, next) {
+  try {
+    const { rows, dryRun, createMissingLevels } = req.body;
+    const result = await questionService.importQuestions({
+      authorId: req.user.id,
+      rows,
+      dryRun: dryRun !== false, // par défaut : simple vérification, jamais d'écriture sans demande explicite
+      createMissingLevels: !!createMissingLevels,
+    });
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function validate(req, res, next) {
   try {
     const question = await questionService.validateQuestion({
@@ -49,4 +64,4 @@ async function list(req, res, next) {
   }
 }
 
-module.exports = { create, validate, reject, list };
+module.exports = { create, importMany, validate, reject, list };

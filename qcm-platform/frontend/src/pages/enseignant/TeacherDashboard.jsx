@@ -19,6 +19,8 @@ export default function TeacherDashboard() {
       <h1>Tableau de bord enseignant</h1>
       <p>{validated} questions validées sur {questions.length} soumises.</p>
       <Link to="/enseignant/nouvelle-question">+ Créer une nouvelle question</Link>
+      {" · "}
+      <Link to="/enseignant/import">Importer des questions (Excel / CSV)</Link>
 
       <h2>Mes questions</h2>
       <ul>

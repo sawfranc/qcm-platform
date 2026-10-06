@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.use(authenticate);
 router.post("/", allowRoles("enseignant"), questionsController.create);
+router.post("/import", allowRoles("enseignant"), questionsController.importMany);
 router.post("/:id/validate", allowRoles("directeur"), questionsController.validate);
 router.post("/:id/reject", allowRoles("directeur"), questionsController.reject);
 router.get("/", allowRoles("admin", "directeur", "enseignant"), questionsController.list);
