@@ -7,6 +7,7 @@ import Register from "../pages/auth/Register";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import ManageDomains from "../pages/admin/ManageDomains";
 import ManageTeachers from "../pages/admin/ManageTeachers";
+import ManageStudents from "../pages/admin/ManageStudents";
 
 import DirectorDashboard from "../pages/directeur/DirectorDashboard";
 import DirectorManageTeachers from "../pages/directeur/ManageTeachers";
@@ -18,6 +19,8 @@ import CreateQuestion from "../pages/enseignant/CreateQuestion";
 import StudentDashboard from "../pages/eleve/StudentDashboard";
 import QuizSession from "../pages/eleve/QuizSession";
 import Results from "../pages/eleve/Results";
+import NewTest from "../pages/eleve/NewTest";
+import History from "../pages/eleve/History";
 
 export default function AppRoutes() {
   return (
@@ -29,6 +32,7 @@ export default function AppRoutes() {
       <Route path="/admin" element={<ProtectedRoute roles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
       <Route path="/admin/domains" element={<ProtectedRoute roles={["admin"]}><ManageDomains /></ProtectedRoute>} />
       <Route path="/admin/teachers" element={<ProtectedRoute roles={["admin"]}><ManageTeachers /></ProtectedRoute>} />
+      <Route path="/admin/students" element={<ProtectedRoute roles={["admin"]}><ManageStudents /></ProtectedRoute>} />
 
       {/* Directeur de domaine */}
       <Route path="/directeur" element={<ProtectedRoute roles={["directeur"]}><DirectorDashboard /></ProtectedRoute>} />
@@ -41,6 +45,8 @@ export default function AppRoutes() {
 
       {/* Élève / étudiant */}
       <Route path="/" element={<ProtectedRoute roles={["eleve"]}><StudentDashboard /></ProtectedRoute>} />
+      <Route path="/nouveau-test" element={<ProtectedRoute roles={["eleve"]}><NewTest /></ProtectedRoute>} />
+      <Route path="/historique" element={<ProtectedRoute roles={["eleve"]}><History /></ProtectedRoute>} />
       <Route path="/quiz/:sessionId" element={<ProtectedRoute roles={["eleve"]}><QuizSession /></ProtectedRoute>} />
       <Route path="/quiz/:sessionId/resultats" element={<ProtectedRoute roles={["eleve"]}><Results /></ProtectedRoute>} />
     </Routes>

@@ -200,13 +200,18 @@ model QuizSession {
   id            String        @id @default(uuid())
   studentId     String        @map("student_id")
   student       User          @relation(fields: [studentId], references: [id])
-  domainId      String        @map("domain_id")
-  domain        Domain        @relation(fields: [domainId], references: [id])
+  domainId      String?       @map("domain_id")
+  domain        Domain?       @relation(fields: [domainId], references: [id])
   themeId       String?       @map("theme_id")
   theme         Theme?        @relation(fields: [themeId], references: [id])
   levelId       String?       @map("level_id")
   level         Level?        @relation(fields: [levelId], references: [id])
   questionCount Int           @map("question_count")
+  // Test personnalisé : limite de temps, expiration, filtres choisis et questions tirées
+  timeLimitMinutes Int?       @map("time_limit_minutes")
+  expiresAt     DateTime?     @map("expires_at")
+  filters       Json?
+  questionIds   String[]      @map("question_ids")
   score         Float?
   startedAt     DateTime      @default(now()) @map("started_at")
   completedAt   DateTime?     @map("completed_at")

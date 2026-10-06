@@ -7,6 +7,7 @@ export default function AdminDashboard() {
       <ul>
         <li><Link to="/admin/domains">Gérer les domaines et les directeurs</Link></li>
         <li><Link to="/admin/teachers">Gérer les enseignants et directeurs (comptes)</Link></li>
+        <li><Link to="/admin/students">Gérer les étudiants et leurs quotas de questions</Link></li>
       </ul>
     </div>
   );
