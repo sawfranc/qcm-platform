@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { myDomains } from "../../api/domains";
 import { createUser, listUsers, suspendUser } from "../../api/users";
+import TeacherAssignmentsEditor, { AssignmentChips } from "../../components/TeacherAssignments";
 
 // Équivalent de la page admin, mais limitée au(x) domaine(s) que ce directeur dirige.
 // Le domaine n'est pas à choisir : on affiche celui du directeur, et on l'utilise directement.
@@ -10,6 +11,7 @@ export default function DirectorManageTeachers() {
   const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "", domainId: "" });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [editingId, setEditingId] = useState(null);
 
   async function refresh() {
     const [domainsRes, usersRes] = await Promise.all([myDomains(), listUsers()]);
@@ -95,6 +97,7 @@ export default function DirectorManageTeachers() {
             <tr>
               <th style={{ textAlign: "left" }}>Nom</th>
               <th style={{ textAlign: "left" }}>Email</th>
+              <th style={{ textAlign: "left" }}>Domaine(s)</th>
               <th style={{ textAlign: "left" }}>Statut</th>
               <th></th>
             </tr>
@@ -105,11 +108,25 @@ export default function DirectorManageTeachers() {
                 <td>{t.fullName}</td>
                 <td>{t.email}</td>
                 <td>
+                  <AssignmentChips assignments={t.teacherAssignments} />
+                  {editingId === t.id && (
+                    <TeacherAssignmentsEditor
+                      teacher={t}
+                      domains={domains}
+                      onCancel={() => setEditingId(null)}
+                      onSaved={() => { setEditingId(null); refresh(); }}
+                    />
+                  )}
+                </td>
+                <td>
                   <span className={`badge ${t.status === "actif" ? "badge--success" : "badge--error"}`}>
                     {t.status}
                   </span>
                 </td>
                 <td>
+                  {editingId !== t.id && (
+                    <button onClick={() => setEditingId(t.id)}>Domaines</button>
+                  )}{" "}
                   {t.status === "actif" && (
                     <button onClick={() => handleSuspend(t.id)}>Suspendre</button>
                   )}

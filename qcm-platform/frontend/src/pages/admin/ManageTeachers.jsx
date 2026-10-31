@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { listDomains } from "../../api/domains";
 import { createUser, listUsers, suspendUser } from "../../api/users";
+import TeacherAssignmentsEditor, { AssignmentChips } from "../../components/TeacherAssignments";
 
 // Permet à l'administrateur de créer des comptes enseignant ou directeur,
 // et de les rattacher directement à un domaine (pour les enseignants).
@@ -17,6 +18,7 @@ export default function ManageTeachers() {
   });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [editingId, setEditingId] = useState(null);
 
   async function refresh() {
     const [domainsRes, usersRes] = await Promise.all([listDomains(), listUsers()]);
@@ -100,6 +102,7 @@ export default function ManageTeachers() {
             <th style={{ textAlign: "left" }}>Nom</th>
             <th style={{ textAlign: "left" }}>Email</th>
             <th style={{ textAlign: "left" }}>Rôle</th>
+            <th style={{ textAlign: "left" }}>Domaine(s)</th>
             <th style={{ textAlign: "left" }}>Statut</th>
             <th></th>
           </tr>
@@ -111,11 +114,25 @@ export default function ManageTeachers() {
               <td>{u.email}</td>
               <td>{u.role}</td>
               <td>
+                {u.role === "enseignant" ? <AssignmentChips assignments={u.teacherAssignments} /> : "—"}
+                {editingId === u.id && (
+                  <TeacherAssignmentsEditor
+                    teacher={u}
+                    domains={domains}
+                    onCancel={() => setEditingId(null)}
+                    onSaved={() => { setEditingId(null); refresh(); }}
+                  />
+                )}
+              </td>
+              <td>
                 <span className={`badge ${u.status === "actif" ? "badge--success" : "badge--error"}`}>
                   {u.status}
                 </span>
               </td>
               <td>
+                {u.role === "enseignant" && editingId !== u.id && (
+                  <button onClick={() => setEditingId(u.id)}>Domaines</button>
+                )}{" "}
                 {u.status === "actif" && (
                   <button onClick={() => handleSuspend(u.id)}>Suspendre</button>
                 )}

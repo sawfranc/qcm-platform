@@ -54,16 +54,107 @@ async function createUser(req, res, next) {
 async function listUsers(req, res, next) {
   try {
     const requester = req.user;
-    const where =
-      requester.role === "admin"
-        ? {}
-        : { createdById: requester.id }; // un directeur ne voit que les comptes qu'il a créés
+    let where = {};
+    if (requester.role !== "admin") {
+      // Un directeur voit les comptes qu'il a créés + les enseignants affectés à ses domaines
+      where = {
+        OR: [
+          { createdById: requester.id },
+          { teacherAssignments: { some: { domain: { directorId: requester.id } } } },
+        ],
+      };
+    }
 
     const users = await prisma.user.findMany({
       where,
-      select: { id: true, fullName: true, email: true, phone: true, role: true, status: true, createdAt: true },
+      select: {
+        id: true, fullName: true, email: true, phone: true, role: true, status: true, createdAt: true,
+        teacherAssignments: {
+          select: {
+            id: true, domainId: true, themeId: true,
+            domain: { select: { id: true, name: true, directorId: true } },
+            theme: { select: { id: true, name: true } },
+          },
+        },
+      },
+      orderBy: { fullName: "asc" },
     });
     res.json(users);
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * Remplace les affectations (domaine / thème) d'un enseignant.
+ * body : { assignments: [{ domainId, themeId? }] }  (themeId absent = tout le domaine)
+ * - admin : remplace l'ensemble des affectations de l'enseignant
+ * - directeur : ne gère que les affectations de SES domaines (les autres sont conservées)
+ */
+async function setTeacherAssignments(req, res, next) {
+  try {
+    const { id: teacherId } = req.params;
+    const requester = req.user;
+    const incoming = Array.isArray(req.body.assignments) ? req.body.assignments : [];
+
+    const teacher = await prisma.user.findUnique({ where: { id: teacherId } });
+    if (!teacher || teacher.role !== "enseignant") {
+      return res.status(404).json({ error: "Enseignant introuvable." });
+    }
+
+    // Dédoublonnage + normalisation
+    const seen = new Set();
+    const wanted = [];
+    for (const a of incoming) {
+      if (!a || !a.domainId) continue;
+      const themeId = a.themeId || null;
+      const key = `${a.domainId}|${themeId || ""}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      wanted.push({ domainId: a.domainId, themeId });
+    }
+
+    const domainIds = [...new Set(wanted.map((w) => w.domainId))];
+    const domains = await prisma.domain.findMany({
+      where: { id: { in: domainIds } },
+      include: { themes: { select: { id: true } } },
+    });
+    if (domains.length !== domainIds.length) {
+      return res.status(400).json({ error: "Domaine inconnu." });
+    }
+    const byId = new Map(domains.map((d) => [d.id, d]));
+    for (const w of wanted) {
+      const d = byId.get(w.domainId);
+      if (requester.role === "directeur" && d.directorId !== requester.id) {
+        return res.status(403).json({ error: "Vous ne pouvez gérer que les affectations de vos propres domaines." });
+      }
+      if (w.themeId && !d.themes.some((t) => t.id === w.themeId)) {
+        return res.status(400).json({ error: "Ce thème n'appartient pas au domaine indiqué." });
+      }
+    }
+
+    // Périmètre de remplacement : tout pour l'admin, uniquement ses domaines pour un directeur
+    const scope =
+      requester.role === "admin"
+        ? { teacherId }
+        : { teacherId, domain: { directorId: requester.id } };
+
+    await prisma.$transaction([
+      prisma.teacherAssignment.deleteMany({ where: scope }),
+      prisma.teacherAssignment.createMany({
+        data: wanted.map((w) => ({ teacherId, domainId: w.domainId, themeId: w.themeId, assignedById: requester.id })),
+      }),
+    ]);
+
+    const assignments = await prisma.teacherAssignment.findMany({
+      where: { teacherId },
+      select: {
+        id: true, domainId: true, themeId: true,
+        domain: { select: { id: true, name: true, directorId: true } },
+        theme: { select: { id: true, name: true } },
+      },
+    });
+    res.json({ teacherId, assignments });
   } catch (err) {
     next(err);
   }
@@ -79,4 +170,4 @@ async function suspendUser(req, res, next) {
   }
 }
 
-module.exports = { createUser, listUsers, suspendUser };
+module.exports = { createUser, listUsers, suspendUser, setTeacherAssignments };
