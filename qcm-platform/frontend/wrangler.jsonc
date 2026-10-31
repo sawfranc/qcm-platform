@@ -1,0 +1,10 @@
+{
+  // Déploiement du frontend en site statique sur Cloudflare (Workers Static Assets)
+  "name": "qcm-platform",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    // Toute adresse inconnue renvoie index.html : nécessaire pour react-router (ex. /nouveau-test)
+    "not_found_handling": "single-page-application"
+  }
+}
