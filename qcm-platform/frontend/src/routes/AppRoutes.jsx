@@ -3,6 +3,7 @@ import ProtectedRoute from "./ProtectedRoute";
 
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
+import ChangePassword from "../pages/auth/ChangePassword";
 
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import ManageDomains from "../pages/admin/ManageDomains";
@@ -28,6 +29,8 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+
+      <Route path="/mot-de-passe" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
 
       {/* Administrateur central */}
       <Route path="/admin" element={<ProtectedRoute roles={["admin"]}><AdminDashboard /></ProtectedRoute>} />

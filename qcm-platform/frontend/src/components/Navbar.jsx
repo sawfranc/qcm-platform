@@ -26,6 +26,7 @@ export default function Navbar() {
         {user && (
           <>
             {links.map((l) => <Link key={l.to} to={l.to}>{l.label}</Link>)}
+            <Link to="/mot-de-passe">Mot de passe</Link>
             <span className="app-nav__user">{user.fullName} · {user.role}</span>
             <button type="button" onClick={logout}>Déconnexion</button>
           </>

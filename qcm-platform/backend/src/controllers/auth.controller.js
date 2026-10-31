@@ -87,4 +87,35 @@ async function refresh(req, res, next) {
   }
 }
 
-module.exports = { register, login, refresh };
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8, "Le nouveau mot de passe doit contenir au moins 8 caractères."),
+});
+
+// Changement de mot de passe par l'utilisateur connecté (tous rôles)
+async function changePassword(req, res, next) {
+  try {
+    const parsed = changePasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.issues[0]?.message || "Données invalides." });
+    }
+    const { currentPassword, newPassword } = parsed.data;
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!user) return res.status(404).json({ error: "Compte introuvable." });
+
+    const valid = await comparePassword(currentPassword, user.passwordHash);
+    if (!valid) return res.status(400).json({ error: "Le mot de passe actuel est incorrect." });
+
+    if (currentPassword === newPassword) {
+      return res.status(400).json({ error: "Le nouveau mot de passe doit être différent de l'ancien." });
+    }
+
+    await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(newPassword) } });
+    res.json({ message: "Mot de passe modifié." });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { register, login, refresh, changePassword };
