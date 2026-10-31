@@ -7,9 +7,16 @@ const { errorHandler } = require("./middleware/errorHandler");
 const app = express();
 
 app.use(helmet());
+// CORS_ORIGIN accepte une ou plusieurs adresses séparées par des virgules,
+// ex. "https://sawfr.com,https://www.sawfr.com"
+const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
+  .split(",")
+  .map((o) => o.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    origin: allowedOrigins.length === 1 ? allowedOrigins[0] : allowedOrigins,
     credentials: true,
   })
 );
