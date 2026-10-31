@@ -1,9 +1,26 @@
-import { Link } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { homeFor } from "../utils/roleHome";
 
 const ROLE_LINKS = {
+  admin: [
+    { to: "/admin", label: "Accueil", end: true },
+    { to: "/admin/domains", label: "Domaines" },
+    { to: "/admin/teachers", label: "Comptes" },
+    { to: "/admin/students", label: "Étudiants" },
+  ],
+  directeur: [
+    { to: "/directeur", label: "Accueil", end: true },
+    { to: "/directeur/enseignants", label: "Enseignants" },
+    { to: "/directeur/validation", label: "Validation" },
+  ],
+  enseignant: [
+    { to: "/enseignant", label: "Accueil", end: true },
+    { to: "/enseignant/nouvelle-question", label: "Nouvelle question" },
+    { to: "/enseignant/import", label: "Importer" },
+  ],
   eleve: [
-    { to: "/", label: "Tableau de bord" },
+    { to: "/", label: "Tableau de bord", end: true },
     { to: "/nouveau-test", label: "Nouveau test" },
     { to: "/historique", label: "Historique" },
   ],
@@ -15,7 +32,7 @@ export default function Navbar() {
 
   return (
     <nav className="app-nav">
-      <Link to="/" className="app-nav__brand">Plateforme QCM</Link>
+      <Link to={user ? homeFor(user.role) : "/login"} className="app-nav__brand">Plateforme QCM</Link>
       <div className="app-nav__links">
         {!user && (
           <>
@@ -25,8 +42,12 @@ export default function Navbar() {
         )}
         {user && (
           <>
-            {links.map((l) => <Link key={l.to} to={l.to}>{l.label}</Link>)}
-            <Link to="/mot-de-passe">Mot de passe</Link>
+            {links.map((l) => (
+              <NavLink key={l.to} to={l.to} end={l.end} className={({ isActive }) => (isActive ? "is-active" : undefined)}>
+                {l.label}
+              </NavLink>
+            ))}
+            <NavLink to="/mot-de-passe" className={({ isActive }) => (isActive ? "is-active" : undefined)}>Mot de passe</NavLink>
             <span className="app-nav__user">{user.fullName} · {user.role}</span>
             <button type="button" onClick={logout}>Déconnexion</button>
           </>

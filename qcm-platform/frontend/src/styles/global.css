@@ -488,3 +488,10 @@ button.primary:disabled { background: var(--rule); color: var(--muted); }
   .score-hero__note { font-size: 2.6rem; }
   .app-nav__links { gap: 0.8rem; flex-wrap: wrap; }
 }
+
+/* Lien de navigation actif */
+.app-nav__links a.is-active {
+  opacity: 1;
+  color: var(--gold-light);
+  border-bottom: 2px solid var(--gold-light);
+}
